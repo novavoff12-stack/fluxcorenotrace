@@ -1,0 +1,585 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HashRouter, Route, Routes, Navigate, useParams } from "react-router-dom";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
+import { UIVersionProvider, useUIVersion } from "@/hooks/useUIVersion";
+import { WorkspaceProvider } from "@/hooks/useWorkspace";
+import { DepartmentProvider } from "@/hooks/useDepartment";
+import { I18nProvider } from "@/hooks/useI18n";
+import { DOMTranslator } from "@/components/DOMTranslator";
+import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
+import { BlacklistGate } from "@/components/BlacklistGate";
+import { AccountRemovalGate } from "@/components/AccountRemovalGate";
+import { LoadWatchdog } from "@/components/LoadWatchdog";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+
+/** Wraps public / marketing pages so they use the steel-blue accent (workspace UI untouched). */
+const PublicAccent = ({ children }: { children: React.ReactNode }) => (
+  <div className="public-accent contents">{children}</div>
+);
+import { supabase } from "@/integrations/supabase/client";
+import { NexusSkeleton, ClassicSkeleton } from "@/components/PageSkeletons";
+
+// Lazy load every route — each gets its own JS chunk so devtools
+// only ever sees code for the page that's currently rendered.
+const Index = lazy(() => import("./pages/Index"));
+const Login = lazy(() => import("./pages/Login"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+const SsoStart = lazy(() => import("./pages/SsoStart"));
+const SsoCallback = lazy(() => import("./pages/SsoCallback"));
+const LinkDiscord = lazy(() => import("./pages/LinkDiscord"));
+const CrewWishlist = lazy(() => import("./pages/CrewWishlist"));
+
+// Lazy load everything else
+const Workspaces = lazy(() => import("./pages/Workspaces"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Members = lazy(() => import("./pages/Members"));
+const MemberProfile = lazy(() => import("./pages/MemberProfile"));
+const Ranks = lazy(() => import("./pages/Ranks"));
+const Activity = lazy(() => import("./pages/Activity"));
+const Sessions = lazy(() => import("./pages/Sessions"));
+const Wall = lazy(() => import("./pages/Wall"));
+const SetupTracking = lazy(() => import("./pages/SetupTracking"));
+const SettingsPage = lazy(() => import("./pages/Settings"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Feedback = lazy(() => import("./pages/Feedback"));
+const FeedbackTicket = lazy(() => import("./pages/FeedbackTicket"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Support = lazy(() => import("./pages/Support"));
+const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace"));
+const Documents = lazy(() => import("./pages/Documents"));
+const DocumentView = lazy(() => import("./pages/DocumentView"));
+const LOA = lazy(() => import("./pages/LOA"));
+const Staff = lazy(() => import("./pages/Staff"));
+const Roles = lazy(() => import("./pages/Roles"));
+const Quotas = lazy(() => import("./pages/Quotas"));
+const MessageLogs = lazy(() => import("./pages/MessageLogs"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const Kudos = lazy(() => import("./pages/Kudos"));
+const Promotions = lazy(() => import("./pages/Promotions"));
+const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
+const Bargains = lazy(() => import("./pages/Bargains"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Demo = lazy(() => import("./pages/Demo"));
+const Creations = lazy(() => import("./pages/Creations"));
+const Admin = lazy(() => import("./pages/Admin"));
+const ApiIndex = lazy(() => import("./pages/api/ApiIndex"));
+const ApiSessions = lazy(() => import("./pages/api/SessionsApi"));
+const ApiRanking = lazy(() => import("./pages/api/RankingApi"));
+const Almore = lazy(() => import("./pages/Almore"));
+const AlmoreLogin = lazy(() => import("./pages/AlmoreLogin"));
+const BargainsLogin = lazy(() => import("./pages/BargainsLogin"));
+const Shoply = lazy(() => import("./pages/Shoply"));
+const ShoplyLogin = lazy(() => import("./pages/ShoplyLogin"));
+const BDashboard = lazy(() => import("./bargains/Dashboard"));
+const BSessions  = lazy(() => import("./bargains/Sessions"));
+const BQuotas    = lazy(() => import("./bargains/Quotas"));
+const BMembers   = lazy(() => import("./bargains/Members"));
+const BActivity  = lazy(() => import("./bargains/Activity"));
+const BLOA       = lazy(() => import("./bargains/LOA"));
+const BDocuments = lazy(() => import("./bargains/Documents"));
+const BMemberProfile = lazy(() => import("./bargains/MemberProfile"));
+const BWall      = lazy(() => import("./bargains/Wall"));
+const BStaff     = lazy(() => import("./bargains/Staff"));
+const BRoles     = lazy(() => import("./bargains/Roles"));
+const BDepartments = lazy(() => import("./bargains/Departments"));
+const BDepartmentSettings = lazy(() => import("./bargains/DepartmentSettings"));
+const PartnerPortal = lazy(() => import("./pages/PartnerPortal"));
+const PartnerLogin = lazy(() => import("./pages/PartnerLogin"));
+const ThemedPortal = lazy(() => import("./pages/ThemedPortal"));
+const PartnerClosed = lazy(() => import("./pages/PartnerClosed"));
+const Status = lazy(() => import("./pages/Status"));
+const SecurityPage = lazy(() => import("./pages/Security"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const Newsletter = lazy(() => import("./pages/Newsletter"));
+const Applications = lazy(() => import("./pages/Applications"));
+const ApplicationQueue = lazy(() => import("./pages/ApplicationQueue"));
+const Apply = lazy(() => import("./pages/Apply"));
+const DiscordVerify = lazy(() => import("./pages/DiscordVerify"));
+const GuestFlightHub = lazy(() => import("./pages/GuestFlightHub"));
+
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+function withTimeout<T>(promise: PromiseLike<T>, ms = 8_000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error("Request timed out")), ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+function PageLoader() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <Loader2 className="w-6 h-6 text-primary animate-spin" />
+    </div>
+  );
+}
+
+// Workspaces that use the Hyra-style Bargains UI.
+// Populated at app boot from partner_portals where use_hyra_ui = true,
+// plus any portal subdomain that opts in. Admins control this from the
+// Staff Dashboard → Partner Portals tab.
+export const HYRA_UI_WORKSPACE_IDS = new Set<string>();
+
+function WorkspacePages() {
+  return (
+    <Suspense fallback={<ClassicSkeleton />}>
+      <Routes>
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="members" element={<Members />} />
+        <Route path="members/:memberId" element={<MemberProfile />} />
+        <Route path="activity" element={<Activity />} />
+        <Route path="sessions" element={<Sessions />} />
+        <Route path="wall" element={<Wall />} />
+        <Route path="ranks" element={<Ranks />} />
+        <Route path="setup-tracking" element={<SetupTracking />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="documents" element={<Documents />} />
+        <Route path="documents/:docId" element={<DocumentView />} />
+        <Route path="loa" element={<LOA />} />
+        <Route path="staff" element={<Staff />} />
+        <Route path="roles" element={<Roles />} />
+        <Route path="quotas" element={<Quotas />} />
+        <Route path="message-logs" element={<MessageLogs />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="kudos" element={<Kudos />} />
+        <Route path="promotions" element={<Promotions />} />
+        <Route path="applications" element={<Applications />} />
+        <Route path="applications/:formId/queue" element={<ApplicationQueue />} />
+        <Route path="join" element={<JoinWorkspace />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+function BargainsWorkspacePages() {
+  return (
+    <Suspense fallback={<NexusSkeleton />}>
+      <Routes>
+        <Route path="dashboard" element={<BDashboard />} />
+        <Route path="sessions"  element={<BSessions />}  />
+        <Route path="quotas"    element={<BQuotas />}    />
+        <Route path="members"   element={<BMembers />}   />
+        <Route path="members/:memberId" element={<BMemberProfile />} />
+        <Route path="activity"  element={<BActivity />} />
+        <Route path="wall"      element={<BWall />} />
+        <Route path="ranks"     element={<Ranks />} />
+        <Route path="setup-tracking" element={<SetupTracking />} />
+        <Route path="settings"  element={<SettingsPage />} />
+        <Route path="dept-settings" element={<BDepartmentSettings />} />
+        <Route path="documents" element={<BDocuments />} />
+        <Route path="documents/:docId" element={<DocumentView />} />
+        <Route path="loa"       element={<BLOA />} />
+        <Route path="staff"     element={<BStaff />} />
+        <Route path="roles"     element={<BRoles />} />
+        <Route path="departments" element={<BDepartments />} />
+        <Route path="message-logs" element={<MessageLogs />} />
+        <Route path="kudos" element={<Kudos />} />
+        <Route path="promotions" element={<Promotions />} />
+        <Route path="applications" element={<Applications />} />
+        <Route path="applications/:formId/queue" element={<ApplicationQueue />} />
+        <Route path="join"      element={<JoinWorkspace />} />
+        <Route path="*" element={<Navigate to="dashboard" replace />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+function WithDepartment({ children }: { children: React.ReactNode }) {
+  return <DepartmentProvider>{children}</DepartmentProvider>;
+}
+
+function WorkspaceRoutes() {
+  const { workspaceId } = useParams();
+  const { version } = useUIVersion();
+  const forceNexus = !!workspaceId && HYRA_UI_WORKSPACE_IDS.has(workspaceId);
+  const useNexus = forceNexus || version === "nexus";
+  const Pages = useNexus ? BargainsWorkspacePages : WorkspacePages;
+  return (
+    <WorkspaceProvider>
+      <Routes>
+        <Route path="d/:deptSlug/*" element={<WithDepartment><Pages /></WithDepartment>} />
+        <Route path="/*" element={<WithDepartment><Pages /></WithDepartment>} />
+      </Routes>
+    </WorkspaceProvider>
+  );
+}
+
+
+function BargainsWorkspaceRoutes() {
+  return (
+    <WorkspaceProvider>
+      <Routes>
+        <Route path="d/:deptSlug/*" element={<WithDepartment><BargainsWorkspacePages /></WithDepartment>} />
+        <Route path="/*" element={<WithDepartment><BargainsWorkspacePages /></WithDepartment>} />
+      </Routes>
+    </WorkspaceProvider>
+  );
+}
+
+// Routes mounted at the root of a partner subdomain — no /w/:id prefix.
+function PartnerCleanRoutes({ workspaceId, useHyra }: { workspaceId: string; useHyra: boolean }) {
+  const { version } = useUIVersion();
+  const useNexus = useHyra || version === "nexus";
+  const Pages = useNexus ? BargainsWorkspacePages : WorkspacePages;
+  return (
+    <WorkspaceProvider workspaceId={workspaceId}>
+      <Routes>
+        <Route path="d/:deptSlug/*" element={<WithDepartment><Pages /></WithDepartment>} />
+        <Route path="/*" element={<WithDepartment><Pages /></WithDepartment>} />
+      </Routes>
+    </WorkspaceProvider>
+  );
+}
+
+
+
+
+function BargainsWorkspaceGuard({ allowedId }: { allowedId: string }) {
+  const { workspaceId } = useParams();
+  if (workspaceId !== allowedId) {
+    return <Navigate to="/" replace />;
+  }
+  return <BargainsWorkspaceRoutes />;
+}
+
+// On partner subdomains, rewrite legacy /w/:id/<rest> URLs to clean /<rest>.
+function LegacyWorkspaceRedirect() {
+  const params = useParams();
+  const rest = (params["*"] as string) || "dashboard";
+  return <Navigate to={`/${rest}`} replace />;
+}
+
+function AppRoutes() {
+  const hostname = window.location.hostname;
+  const subdomain = hostname.split(".")[0].toLowerCase();
+  const isMainHost =
+    hostname === "fluxcore.works" ||
+    hostname.startsWith("www.") ||
+    hostname.startsWith("id-preview") ||
+    hostname.startsWith("preview--") ||
+    hostname === "localhost" ||
+    hostname.startsWith("127.0.0.1") ||
+    hostname.endsWith(".lovableproject.com") ||
+    hostname.endsWith(".lovable.app");
+  const isHardcoded =
+    hostname.startsWith("almore.") ||
+    hostname.startsWith("bargains.") ||
+    hostname.includes("bloxy-bargains");
+
+  const isStatusHost = hostname.startsWith("status.fluxcore") || hostname === "status.fluxcore.works";
+
+  const [partner, setPartner] = useState<any | undefined>(
+    isMainHost || isHardcoded || isStatusHost ? null : undefined
+  );
+
+  if (isStatusHost) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="*" element={<Status />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
+
+  useEffect(() => {
+    let active = true;
+    // Preload Hyra-UI workspace list, but only for signed-in users —
+    // anon requests get 401 (RLS) and waste a network round-trip on every
+    // marketing page load.
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active || !data.session) return;
+      withTimeout(supabase
+        .from("partner_portals")
+        .select("workspace_id,use_hyra_ui")
+        .eq("use_hyra_ui", true), 6_000)
+        .then(({ data }) => {
+          if (!active || !data) return;
+          for (const row of data) {
+            if (row.workspace_id) HYRA_UI_WORKSPACE_IDS.add(row.workspace_id);
+          }
+        })
+        .catch(() => {});
+    });
+
+    if (isMainHost || isHardcoded) return;
+    withTimeout(supabase
+      .from("partner_portals")
+      .select("id,subdomain,workspace_id,name,tagline,logo_url,accent_color,roblox_group_url,links,status,closed_reason,use_hyra_ui,auto_created,portal_theme,last_active_at,created_at,updated_at")
+      .ilike("subdomain", subdomain)
+      .maybeSingle(), 8_000)
+      .then(({ data }) => {
+        if (!active) return;
+        if (data) {
+          if ((data as any).use_hyra_ui) HYRA_UI_WORKSPACE_IDS.add(data.workspace_id);
+          setPartner(data);
+        } else {
+          setPartner(null);
+        }
+      })
+      .catch(() => {
+        if (active) setPartner(null);
+      });
+    return () => { active = false; };
+  }, [subdomain, isMainHost, isHardcoded]);
+
+  if (partner === undefined) {
+    return <PageLoader />;
+  }
+
+  if (partner) {
+    if (partner.status === "closed") {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <PartnerClosed
+            name={partner.name}
+            reason={partner.closed_reason}
+            accentColor={partner.accent_color}
+            logoUrl={partner.logo_url}
+          />
+        </Suspense>
+      );
+    }
+    // Auto-created (owner-claimed) portals skip the marketing landing —
+    // visiting the subdomain takes you straight into the workspace dashboard.
+    if (partner.auto_created) {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/sso" element={<SsoStart />} />
+            <Route path="/sso/callback" element={<SsoCallback />} />
+            <Route path="/link-discord" element={<LinkDiscord />} />
+            <Route path="/apply/:formId" element={<Apply />} />
+            <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
+            <Route path="/guest/flighthub" element={<GuestFlightHub />} />
+          <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
+            {/* Legacy /w/:id/* links redirect to clean URLs */}
+            <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/*" element={<PartnerCleanRoutes workspaceId={partner.workspace_id} useHyra={!!partner.use_hyra_ui} />} />
+          </Routes>
+        </Suspense>
+      );
+    }
+    const theme = (partner as any).portal_theme || "classic";
+    const themed = theme === "bargains" || theme === "almore" || theme === "shoply";
+    const Landing = themed
+      ? () => <ThemedPortal theme={theme as any} config={partner} />
+      : () => <PartnerPortal config={partner} />;
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<PartnerLogin config={partner} />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/sso" element={<SsoStart />} />
+          <Route path="/sso/callback" element={<SsoCallback />} />
+          <Route path="/link-discord" element={<LinkDiscord />} />
+          <Route path="/apply/:formId" element={<Apply />} />
+            <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
+          <Route path="/guest/flighthub" element={<GuestFlightHub />} />
+          <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
+          {/* Legacy /w/:id/* links redirect to clean URLs */}
+          <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
+          <Route path="/*" element={<PartnerCleanRoutes workspaceId={partner.workspace_id} useHyra={!!partner.use_hyra_ui} />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
+
+
+  if (hostname.startsWith("almore.fluxcore") || hostname.startsWith("almore.")) {
+    const ALMORE_WS = "ec5d2c5f-7d34-4d3a-9a3e-1f8c8b73e5e8"; // placeholder; real id comes from PartnerCleanRoutes only when configured
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Almore />} />
+          <Route path="/login" element={<AlmoreLogin />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/sso" element={<SsoStart />} />
+          <Route path="/sso/callback" element={<SsoCallback />} />
+          <Route path="/link-discord" element={<LinkDiscord />} />
+          <Route path="/workspaces" element={<Workspaces />} />
+          <Route path="/w/:workspaceId/*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Almore />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
+  if (hostname.startsWith("bargains.fluxcore")) {
+    const BARGAINS_WS = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Bargains />} />
+          <Route path="/login" element={<BargainsLogin />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/sso" element={<SsoStart />} />
+          <Route path="/sso/callback" element={<SsoCallback />} />
+          <Route path="/link-discord" element={<LinkDiscord />} />
+          <Route path="/guest/flighthub" element={<GuestFlightHub />} />
+          <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
+          {/* Legacy /w/:id/* links redirect to clean URLs */}
+          <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
+          <Route path="/*" element={<PartnerCleanRoutes workspaceId={BARGAINS_WS} useHyra={false} />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
+  // Shoply released from hardcoded routing — now flows through partner_portals lookup above.
+
+
+
+  if (hostname.includes("bloxy-bargains") || hostname.includes("bargains.")) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<BloxyBargains />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/sso" element={<SsoStart />} />
+          <Route path="/sso/callback" element={<SsoCallback />} />
+          <Route path="/workspaces" element={<Workspaces />} />
+          <Route path="/w/:workspaceId/*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<BloxyBargains />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/sso" element={<SsoStart />} />
+        <Route path="/sso/callback" element={<SsoCallback />} />
+        <Route path="/link-discord" element={<LinkDiscord />} />
+        <Route path="/workspaces" element={<Workspaces />} />
+        <Route path="/terms" element={<PublicAccent><Terms /></PublicAccent>} />
+        <Route path="/pricing" element={<PublicAccent><Pricing /></PublicAccent>} />
+        <Route path="/demo" element={<Demo />} />
+        <Route path="/creations" element={<PublicAccent><Creations /></PublicAccent>} />
+        <Route path="/privacy" element={<PublicAccent><Privacy /></PublicAccent>} />
+        <Route path="/support" element={<PublicAccent><Support /></PublicAccent>} />
+        <Route path="/feedback" element={<PublicAccent><Feedback /></PublicAccent>} />
+        <Route path="/feedback/:ticketId" element={<PublicAccent><FeedbackTicket /></PublicAccent>} />
+        <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
+        <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
+        <Route path="/bloxy-bargains" element={<BloxyBargains />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/staff-dashboard" element={<Admin />} />
+        <Route path="/api" element={<ApiIndex />} />
+        <Route path="/api/sessions" element={<ApiSessions />} />
+        <Route path="/api/ranking" element={<ApiRanking />} />
+        <Route path="/status" element={<PublicAccent><Status /></PublicAccent>} />
+        <Route path="/security" element={<PublicAccent><SecurityPage /></PublicAccent>} />
+        <Route path="/unsubscribe" element={<PublicAccent><Unsubscribe /></PublicAccent>} />
+        <Route path="/newsletter" element={<PublicAccent><Newsletter /></PublicAccent>} />
+        <Route path="/apply/:formId" element={<Apply />} />
+            <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
+        <Route path="/discord/verification/:token" element={<DiscordVerify />} />
+        <Route path="/guest/flighthub/:workspaceId" element={<GuestFlightHub />} />
+        
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+const App = () => {
+  const directPath = typeof window !== "undefined" ? window.location.pathname : "/";
+  if (directPath !== "/" && !window.location.hash) {
+    window.location.replace(`${window.location.origin}/#${directPath}${window.location.search}`);
+    return <PageLoader />;
+  }
+
+  // Catch unhandled lazy import failures globally as a second safety net
+  useEffect(() => {
+    const onErr = (e: ErrorEvent | PromiseRejectionEvent) => {
+      const err: any = (e as PromiseRejectionEvent).reason || (e as ErrorEvent).error || (e as ErrorEvent).message;
+      const msg = err?.message || String(err || "");
+      if (
+        /Loading chunk [\w-]+ failed/i.test(msg) ||
+        /Failed to fetch dynamically imported module/i.test(msg) ||
+        /Importing a module script failed/i.test(msg)
+      ) {
+        const last = parseInt(sessionStorage.getItem("fluxcore_chunk_reload_at") || "0", 10);
+        if (Date.now() - last > 10_000) {
+          sessionStorage.setItem("fluxcore_chunk_reload_at", String(Date.now()));
+          window.location.reload();
+        }
+      }
+    };
+    window.addEventListener("error", onErr as any);
+    window.addEventListener("unhandledrejection", onErr as any);
+    return () => {
+      window.removeEventListener("error", onErr as any);
+      window.removeEventListener("unhandledrejection", onErr as any);
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <UIVersionProvider>
+          <I18nProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <HashRouter>
+                <DOMTranslator />
+                <LoadWatchdog />
+                <ChunkErrorBoundary fallback={<PageLoader />}>
+                  <BlacklistGate>
+                    <AccountRemovalGate>
+                      <AppRoutes />
+                    </AccountRemovalGate>
+                  </BlacklistGate>
+                </ChunkErrorBoundary>
+              </HashRouter>
+            </TooltipProvider>
+          </I18nProvider>
+          </UIVersionProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
+
+export default App;

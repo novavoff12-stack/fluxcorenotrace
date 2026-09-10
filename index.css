@@ -1,0 +1,769 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 8% 6%;
+    --foreground: 0 0% 95%;
+
+    --card: 240 6% 9%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 240 6% 9%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 258 90% 66%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 13%;
+    --secondary-foreground: 0 0% 80%;
+
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 270 60% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 80% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 6% 14%;
+    --input: 240 6% 14%;
+    --ring: 258 90% 66%;
+
+    --radius: 0.625rem;
+
+    --sidebar-background: 240 8% 7%;
+    --sidebar-foreground: 240 4% 55%;
+    --sidebar-primary: 258 90% 66%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 12%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 240 6% 12%;
+    --sidebar-ring: 258 90% 66%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 95% 55%;
+    --warning-foreground: 240 8% 6%;
+  }
+
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    --primary: 258 85% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 93%;
+    --secondary-foreground: 240 5% 35%;
+
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 270 55% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 6% 88%;
+    --input: 240 6% 88%;
+    --ring: 258 85% 58%;
+
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 240 4% 46%;
+    --sidebar-primary: 258 85% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 93%;
+    --sidebar-accent-foreground: 240 10% 10%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 258 85% 58%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 95% 55%;
+    --warning-foreground: 0 0% 10%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  code, pre, .font-mono {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(258 90% 70%), hsl(270 60% 56%));
+  }
+  .text-gradient-hero {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(258 90% 72%), hsl(280 70% 60%), hsl(310 60% 55%));
+  }
+  .glass {
+    @apply bg-card/60 backdrop-blur-xl border border-border/60;
+  }
+  .glass-hover {
+    @apply glass transition-all duration-200;
+  }
+  .glass-hover:hover {
+    @apply bg-card/85;
+    border-color: hsl(258 90% 66% / 0.2);
+  }
+  .glow-primary {
+    box-shadow: 0 0 40px hsl(258 90% 66% / 0.2), 0 0 80px hsl(258 90% 66% / 0.06);
+  }
+  .glow-sm {
+    box-shadow: 0 0 20px hsl(258 90% 66% / 0.15);
+  }
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(160deg, hsl(258 90% 66% / 0.4), hsl(270 60% 52% / 0.2), transparent 60%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .bg-grid {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .bg-radial-glow {
+    background: radial-gradient(ellipse 70% 40% at 50% -10%, hsl(258 90% 66% / 0.12), transparent);
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .animate-fade-up {
+    animation: fade-up 0.5s ease forwards;
+  }
+  .animate-fade-in {
+    animation: fade-in 0.4s ease forwards;
+  }
+  .landing-head {
+    font-family: 'Inter', 'SF Pro Display', -apple-system, system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+  .landing-body {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  @keyframes soft-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(0.82); }
+  }
+  .animate-soft-pulse {
+    animation: soft-pulse 2.4s ease-in-out infinite;
+  }
+  /* Public / marketing pages accent — steel blue #2f74a8 (does NOT affect workspace UI) */
+
+  .public-accent {
+    --primary: 203 57% 42%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 203 57% 42%;
+    --accent: 203 57% 42%;
+    --accent-foreground: 0 0% 100%;
+  }
+}
+
+
+/* Custom white scrollbar */
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(0 0% 100% / 0.55) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: hsl(var(--background) / 0.4);
+  }
+  *::-webkit-scrollbar-thumb {
+    background: hsl(0 0% 100% / 0.75);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(0 0% 100% / 0.95);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* Polished motion utilities */
+@layer utilities {
+  .hover-lift {
+    @apply transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg;
+  }
+  .hover-glow {
+    @apply transition-shadow duration-300 hover:shadow-[0_0_24px_-4px_hsl(var(--primary)/0.4)];
+  }
+  .press-shrink {
+    @apply transition-transform duration-150 active:scale-[0.97];
+  }
+  .smooth-base {
+    @apply transition-all duration-300 ease-out;
+  }
+  .stagger-fade > * {
+    opacity: 0;
+    animation: fade-up 0.5s ease forwards;
+  }
+  .stagger-fade > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-fade > *:nth-child(2) { animation-delay: 60ms; }
+  .stagger-fade > *:nth-child(3) { animation-delay: 120ms; }
+  .stagger-fade > *:nth-child(4) { animation-delay: 180ms; }
+  .stagger-fade > *:nth-child(5) { animation-delay: 240ms; }
+  .stagger-fade > *:nth-child(6) { animation-delay: 300ms; }
+  .stagger-fade > *:nth-child(7) { animation-delay: 360ms; }
+  .stagger-fade > *:nth-child(8) { animation-delay: 420ms; }
+  .stagger-fade > *:nth-child(9) { animation-delay: 480ms; }
+}
+
+/* Smooth all interactive defaults */
+@layer base {
+  a, button {
+    @apply transition-colors duration-200;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* MinimalLayout rail-item active state */
+.rail-item-active .rail-icon {
+  background: hsl(var(--foreground) / 0.06);
+  box-shadow: inset 0 0 0 1px hsl(var(--border) / 0.6);
+}
+.rail-item-active .rail-indicator {
+  height: 1.25rem;
+  opacity: 1;
+}
+
+/* ============================================================
+   Bloxy Bargains workspace — bespoke Hyra-inspired theme
+   ============================================================ */
+.theme-bargains {
+  /* Hyra palette: very dark canvas, slightly elevated graphite cards, coral accent */
+  --background: 240 3% 6%;          /* #0e0f10 canvas */
+  --foreground: 0 0% 98%;
+  --card: 240 3% 11%;               /* #1c1c1e card surface */
+  --card-foreground: 0 0% 98%;
+  --popover: 240 3% 9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 4 88% 68%;             /* coral */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 3% 14%;
+  --secondary-foreground: 0 0% 92%;
+  --muted: 240 3% 13%;
+  --muted-foreground: 240 3% 55%;
+  --accent: 4 88% 68%;
+  --accent-foreground: 0 0% 100%;
+  --border: 240 3% 16%;
+  --input: 240 3% 14%;
+  --ring: 4 88% 68%;
+  --sidebar-background: 240 3% 7%;
+  --sidebar-foreground: 240 3% 55%;
+  --sidebar-primary: 4 88% 68%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 3% 12%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 240 3% 10%;
+  --sidebar-ring: 4 88% 68%;
+  --radius: 0.75rem;
+  background-color: hsl(240 3% 6%) !important;
+  font-family: 'Inter', 'SF Pro Display', -apple-system, system-ui, sans-serif !important;
+  letter-spacing: -0.011em;
+}
+.theme-bargains * {
+  font-family: inherit !important;
+}
+
+/* Slim icon-only sidebar */
+.theme-bargains [data-sidebar="sidebar"],
+.theme-bargains [data-sidebar="sidebar"] > div {
+  background-color: hsl(0 0% 5%) !important;
+  border-right: 1px solid hsl(0 0% 9%) !important;
+}
+.theme-bargains [data-sidebar="sidebar"]:not([data-mobile="true"]) {
+  width: 3.5rem !important;
+  min-width: 3.5rem !important;
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu"] {
+  align-items: center;
+  gap: 0.125rem;
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"] {
+  justify-content: center !important;
+  padding: 0 !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  margin: 0 auto !important;
+  border-radius: 0.5rem !important;
+  color: hsl(0 0% 50%) !important;
+  background-color: transparent !important;
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover {
+  background-color: hsl(0 0% 10%) !important;
+  color: hsl(0 0% 95%) !important;
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"],
+.theme-bargains [data-sidebar="sidebar"] .bg-primary\/10 {
+  background-color: hsl(0 0% 10%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"] svg {
+  margin: 0 !important;
+  width: 1.05rem !important;
+  height: 1.05rem !important;
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"] > span,
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="group-label"] {
+  display: none !important;
+}
+.theme-bargains [data-sidebar="sidebar"] .text-gradient,
+.theme-bargains [data-sidebar="sidebar"] [class*="px-4 py-5"] p {
+  display: none !important;
+}
+.theme-bargains [data-sidebar="sidebar"] [class*="px-4 py-5"] {
+  padding: 0.875rem 0 !important;
+  text-align: center;
+}
+.theme-bargains [data-sidebar="sidebar"] [class*="px-4 py-5"] button {
+  color: hsl(4 90% 68%) !important;
+  background: transparent !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  font-size: 1.25rem !important;
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="footer"] {
+  padding: 0.375rem;
+}
+
+/* Main + cards */
+.theme-bargains main {
+  background-color: hsl(0 0% 4%);
+  padding: 1.75rem 2rem !important;
+}
+.theme-bargains .bg-card,
+.theme-bargains [class*="bg-card"],
+.theme-bargains .glass {
+  background-color: hsl(0 0% 7%) !important;
+  backdrop-filter: none !important;
+  border: 1px solid hsl(0 0% 12%) !important;
+  border-radius: 1rem !important;
+}
+
+/* Header — slim, centred search vibe */
+.theme-bargains header {
+  background-color: hsl(0 0% 4% / 0.95) !important;
+  border-color: hsl(0 0% 10%) !important;
+  height: 3.25rem !important;
+}
+
+/* Typography polish */
+.theme-bargains h1 { font-weight: 800 !important; letter-spacing: -0.02em; }
+.theme-bargains h2, .theme-bargains h3 { font-weight: 700 !important; letter-spacing: -0.015em; }
+
+/* Coral primary buttons */
+.theme-bargains .bg-primary {
+  background-color: hsl(4 90% 68%) !important;
+  box-shadow: 0 10px 30px -12px hsl(4 90% 68% / 0.45);
+}
+.theme-bargains .bg-primary:hover {
+  background-color: hsl(4 90% 62%) !important;
+}
+.theme-bargains .text-primary {
+  color: hsl(4 90% 70%) !important;
+}
+.theme-bargains .border-primary {
+  border-color: hsl(4 90% 68%) !important;
+}
+
+/* Inputs */
+.theme-bargains input,
+.theme-bargains textarea,
+.theme-bargains select,
+.theme-bargains [role="combobox"] {
+  background-color: hsl(0 0% 9%) !important;
+  border-color: hsl(0 0% 14%) !important;
+  border-radius: 0.625rem !important;
+}
+
+/* Progress bars — orange gradient like the Quotas screenshot */
+.theme-bargains [role="progressbar"] > div,
+.theme-bargains .bg-primary[class*="h-"] {
+  background-image: linear-gradient(90deg, hsl(28 95% 55%), hsl(18 95% 60%)) !important;
+}
+
+/* ===========================================================
+   Hyra-style card refinements (stats, panels, headers, lists)
+   =========================================================== */
+
+/* Card hover lift */
+.theme-bargains .glass-hover,
+.theme-bargains .glass {
+  transition: transform 220ms ease, border-color 220ms ease, background-color 220ms ease !important;
+}
+.theme-bargains .glass-hover:hover {
+  background-color: hsl(0 0% 8.5%) !important;
+  border-color: hsl(0 0% 16%) !important;
+  transform: translateY(-2px);
+}
+
+/* Stat card icon tile — flat coral chip, no glow halo */
+.theme-bargains .glass-hover > div > div:first-child > div:first-child,
+.theme-bargains [class*="rounded-xl"][class*="border-primary/30"] {
+  background: hsl(4 90% 68% / 0.12) !important;
+  border: 1px solid hsl(4 90% 68% / 0.22) !important;
+  box-shadow: none !important;
+  background-image: none !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  border-radius: 0.625rem !important;
+}
+.theme-bargains [class*="rounded-xl"][class*="border-primary/30"] svg {
+  filter: none !important;
+  color: hsl(4 90% 70%) !important;
+}
+
+/* Bigger stat numbers, lighter labels */
+.theme-bargains .glass-hover p.text-2xl {
+  font-size: 2rem !important;
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em !important;
+}
+.theme-bargains .glass-hover p.text-xs {
+  font-size: 0.75rem !important;
+  color: hsl(0 0% 55%) !important;
+  margin-top: 0.25rem !important;
+}
+
+/* Stat card padding + spacing */
+.theme-bargains .glass-hover.rounded-xl {
+  padding: 1.25rem 1.25rem 1.1rem !important;
+}
+
+/* Panel headers (Top Performer, Recent Activity, Members, Recent Sessions) */
+.theme-bargains .glass h3,
+.theme-bargains .glass-hover h3 {
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+  color: hsl(0 0% 96%) !important;
+}
+
+/* Kill the soft warning/primary glow blobs inside panels */
+.theme-bargains .glass .blur-3xl,
+.theme-bargains .glass-hover .blur-3xl {
+  display: none !important;
+}
+
+/* Warning accent (crown, clock icons) — reuse coral so it matches */
+.theme-bargains .text-warning {
+  color: hsl(4 90% 70%) !important;
+}
+.theme-bargains .bg-warning {
+  background-color: hsl(4 90% 68%) !important;
+}
+.theme-bargains .bg-warning\/10 {
+  background-color: hsl(4 90% 68% / 0.12) !important;
+}
+
+/* Replace purple text gradient with clean white inside Bargains */
+.theme-bargains .text-gradient {
+  background-image: linear-gradient(135deg, hsl(0 0% 100%), hsl(4 90% 75%)) !important;
+}
+
+/* Overview page heading */
+.theme-bargains main h1 {
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em;
+}
+
+/* Member row hover */
+.theme-bargains .glass [class*="hover:bg-"]:hover,
+.theme-bargains .glass-hover [class*="hover:bg-"]:hover {
+  background-color: hsl(0 0% 10%) !important;
+}
+
+/* ===========================================================
+   Site-wide Hyra polish — applies to every page in Bargains
+   =========================================================== */
+
+/* Tabs — pill style */
+.theme-bargains [role="tablist"] {
+  background-color: hsl(0 0% 7%) !important;
+  border: 1px solid hsl(0 0% 12%) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.25rem !important;
+}
+.theme-bargains [role="tab"] {
+  border-radius: 0.5rem !important;
+  color: hsl(0 0% 60%) !important;
+  font-weight: 500 !important;
+}
+.theme-bargains [role="tab"][data-state="active"] {
+  background-color: hsl(0 0% 12%) !important;
+  color: hsl(0 0% 98%) !important;
+  box-shadow: none !important;
+}
+
+/* Badges — flatter, coral accent */
+.theme-bargains [class*="bg-primary/10"] {
+  background-color: hsl(4 90% 68% / 0.12) !important;
+  color: hsl(4 90% 75%) !important;
+}
+.theme-bargains [class*="bg-success/10"] {
+  background-color: hsl(160 70% 45% / 0.12) !important;
+}
+.theme-bargains [class*="bg-destructive/10"] {
+  background-color: hsl(0 80% 60% / 0.12) !important;
+}
+
+/* Outline buttons / inputs */
+.theme-bargains .border-input {
+  border-color: hsl(0 0% 14%) !important;
+  background-color: hsl(0 0% 8%) !important;
+}
+
+/* Tables */
+.theme-bargains table { border-collapse: separate; border-spacing: 0; }
+.theme-bargains thead { background-color: hsl(0 0% 6%) !important; }
+.theme-bargains th {
+  color: hsl(0 0% 55%) !important;
+  font-weight: 500 !important;
+  font-size: 0.72rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid hsl(0 0% 11%) !important;
+}
+.theme-bargains tbody tr {
+  border-bottom: 1px solid hsl(0 0% 9%) !important;
+  transition: background-color 180ms ease;
+}
+.theme-bargains tbody tr:hover { background-color: hsl(0 0% 7%) !important; }
+
+/* Dialogs, popovers, dropdowns */
+.theme-bargains [role="dialog"],
+.theme-bargains [data-radix-popper-content-wrapper] > * {
+  background-color: hsl(0 0% 6%) !important;
+  border: 1px solid hsl(0 0% 13%) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 30px 80px -20px hsl(0 0% 0% / 0.7) !important;
+}
+
+/* Avatar ring */
+.theme-bargains .ring-primary { --tw-ring-color: hsl(4 90% 68%) !important; }
+
+/* Links */
+.theme-bargains a:hover { color: hsl(4 90% 75%); }
+
+/* Muted copy */
+.theme-bargains p.text-muted-foreground,
+.theme-bargains .text-muted-foreground {
+  color: hsl(0 0% 55%) !important;
+}
+
+/* Skeletons */
+.theme-bargains [class*="animate-pulse"][class*="bg-muted"] {
+  background-color: hsl(0 0% 10%) !important;
+}
+
+
+/* ===========================================================
+   Hyra-grade typography & cards across ALL Bargains pages
+   =========================================================== */
+
+/* Page H1 — large, very bold, white */
+.theme-bargains main h1 {
+  font-size: 2.25rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.035em !important;
+  line-height: 1.05 !important;
+  color: hsl(0 0% 100%) !important;
+}
+.theme-bargains main h2 {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em !important;
+  color: hsl(0 0% 100%) !important;
+}
+.theme-bargains main h3 {
+  font-weight: 700 !important;
+  letter-spacing: -0.015em !important;
+  color: hsl(0 0% 98%) !important;
+}
+
+/* Cards — elevated graphite, soft border, generous radius */
+.theme-bargains .bg-card,
+.theme-bargains .glass,
+.theme-bargains .glass-hover,
+.theme-bargains [class*="bg-card"] {
+  background-color: hsl(240 3% 11%) !important;
+  border: 1px solid hsl(240 3% 16%) !important;
+  border-radius: 0.875rem !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 0 hsl(240 3% 20% / 0.4) inset !important;
+}
+.theme-bargains .glass-hover:hover {
+  background-color: hsl(240 3% 13%) !important;
+  border-color: hsl(240 3% 20%) !important;
+  transform: translateY(-1px);
+}
+
+/* Toolbar buttons (Filter / Sort / Edit View etc.) — flat icon buttons */
+.theme-bargains main button[class*="ghost"],
+.theme-bargains main button[class*="outline"] {
+  border-radius: 0.5rem !important;
+  font-weight: 500 !important;
+  color: hsl(0 0% 75%) !important;
+}
+.theme-bargains main button[class*="outline"] {
+  background-color: hsl(240 3% 11%) !important;
+  border: 1px solid hsl(240 3% 17%) !important;
+}
+.theme-bargains main button[class*="outline"]:hover {
+  background-color: hsl(240 3% 14%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+
+/* Primary CTA — coral */
+.theme-bargains .bg-primary,
+.theme-bargains button[class*="bg-primary"] {
+  background-color: hsl(4 88% 68%) !important;
+  color: hsl(0 0% 100%) !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+}
+.theme-bargains .bg-primary:hover {
+  background-color: hsl(4 88% 62%) !important;
+}
+
+/* Calendar / day pills (Sessions page) — small squared chips */
+.theme-bargains [class*="rounded"][class*="grid"] > button,
+.theme-bargains .grid > button[class*="rounded"] {
+  border-radius: 0.625rem !important;
+}
+.theme-bargains button[data-state="active"][class*="rounded"],
+.theme-bargains button[class*="bg-primary"][class*="rounded"] {
+  background-color: hsl(4 88% 68%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+
+/* Tables and table-like rows */
+.theme-bargains table,
+.theme-bargains [role="table"] {
+  background-color: hsl(240 3% 11%) !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+}
+.theme-bargains th {
+  background-color: hsl(240 3% 9%) !important;
+  color: hsl(0 0% 60%) !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Progress bars — coral solid (no gradient) on Quotas */
+.theme-bargains [role="progressbar"] {
+  background-color: hsl(240 3% 16%) !important;
+  border-radius: 9999px !important;
+  height: 0.5rem !important;
+}
+.theme-bargains [role="progressbar"] > div {
+  background-image: none !important;
+  background-color: hsl(4 88% 68%) !important;
+}
+
+/* Quota & session "stat" tiles inside cards — darker nested boxes */
+.theme-bargains .bg-card .bg-card,
+.theme-bargains .glass .bg-secondary,
+.theme-bargains .glass-hover .bg-secondary,
+.theme-bargains [class*="bg-muted"] {
+  background-color: hsl(240 3% 8%) !important;
+  border: 1px solid hsl(240 3% 14%) !important;
+  border-radius: 0.625rem !important;
+}
+
+/* Number-heavy stats — bold, tabular */
+.theme-bargains .text-2xl,
+.theme-bargains .text-3xl,
+.theme-bargains .text-4xl {
+  font-weight: 800 !important;
+  letter-spacing: -0.025em !important;
+  font-variant-numeric: tabular-nums;
+  color: hsl(0 0% 100%) !important;
+}
+
+/* Labels under stat numbers */
+.theme-bargains label,
+.theme-bargains .text-xs.text-muted-foreground,
+.theme-bargains .text-sm.text-muted-foreground {
+  color: hsl(0 0% 55%) !important;
+  font-weight: 500 !important;
+}
+
+/* Search/header input polish */
+.theme-bargains header input {
+  background-color: hsl(240 3% 11%) !important;
+  border: 1px solid hsl(240 3% 16%) !important;
+  border-radius: 0.625rem !important;
+}
+
+/* Sidebar active item — coral text only, no bg fill change beyond subtle */
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] svg,
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"].bg-primary\/10 svg {
+  color: hsl(4 88% 70%) !important;
+}
+
+/* Selection */
+.theme-bargains ::selection {
+  background-color: hsl(4 88% 68% / 0.35);
+  color: hsl(0 0% 100%);
+}
