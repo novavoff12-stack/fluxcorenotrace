@@ -1,0 +1,82 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/v1/sessions",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-sessions"
+    },
+    {
+      "source": "/api/v1/sessions/:path*",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-sessions/:path*"
+    },
+    {
+      "source": "/api/v1/games",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-games"
+    },
+    {
+      "source": "/api/v1/track",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/activity-tracker"
+    },
+    {
+      "source": "/api/v1/track/:path*",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/activity-tracker/:path*"
+    },
+    {
+      "source": "/api/v1/ranking",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-ranking"
+    },
+    {
+      "source": "/https/application/supabase",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center"
+    },
+    {
+      "source": "/https/application/supabase/:path*",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center/:path*"
+    },
+    {
+      "source": "/application/:path*",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center/:path*"
+    },
+    {
+      "source": "/:path((?!api/|https/|application/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path((?!403\\.html).*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(httrack|wget|curl/|libwww|sitesucker|webcopy|cyotek|offline ?explorer|teleport|getleft|webreaper|website ?ripper|website ?downloader|httpx|scrapy|wpscan|nikto|nmap|masscan|java/|python-requests|go-http-client|axios/|node-fetch|okhttp|winhttp|fasthttp|aria2|fdm|free download manager|jdownloader|wfdownloader|metaproducts|black ?widow|grabber|harvest|extractor|spider|crawler).*"
+        }
+      ],
+      "destination": "/403.html",
+      "permanent": false
+    },
+    {
+      "source": "/:path((?!403\\.html).*)",
+      "missing": [
+        { "type": "header", "key": "user-agent" }
+      ],
+      "destination": "/403.html",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "X-Robots-Tag", "value": "index, follow, noarchive, nosnippet" },
+        { "key": "X-Download-Options", "value": "noopen" },
+        { "key": "X-Fluxcore-Protected", "value": "1" }
+      ]
+    }
+  ]
+}
